@@ -108,7 +108,7 @@ namespace DataAccess.Service
             }
             catch (Exception e)
             {
-                throw new Exception(e.Message);
+                return null;
             }
         }
 
@@ -120,7 +120,7 @@ namespace DataAccess.Service
             }
             catch (Exception e)
             {
-                throw new Exception(e.Message);
+                return null;
             }
         }
     }

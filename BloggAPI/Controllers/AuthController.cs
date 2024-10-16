@@ -98,37 +98,51 @@ namespace BloggAPI.Controllers
             }
         }
 
-        ////Register
-        //[AllowAnonymous]
-        //[HttpPost("register")]
-        //public async Task<IActionResult> Register(RegisterDto registerDto)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
+        //Register
+        [AllowAnonymous]
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterDto registerDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        //    CreatedPasswordHash(registerDto.password,
-        //        out byte[] passwordHash,
-        //        out byte[] passwordSalt);
+            // Kiểm tra xem username hoặc email đã tồn tại chưa
+            var existingUser = await _userService.GetUserByEmailAsync(registerDto.email);
+            if (existingUser != null)
+            {
+                return BadRequest("Email already in use.");
+            }
 
-        //    var userModel = registerDto.ToUserRegister(passwordHash, passwordSalt);
-        //    userModel.verificationToken = CreateRandomToken();
-        //    userModel.roleId = 2;
-        //    userModel.isActive = true;
-        //    try
-        //    {
-        //        _userService.Register(userModel);
-        //        return Ok("User registered successfully.");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Trả về BadRequest với thông điệp từ exception
-        //        return BadRequest(ex.Message);
-        //    }
+            existingUser = await _userService.GetUserByUsernameAsync(registerDto.username);
+            if (existingUser != null)
+            {
+                return BadRequest("Username already in use.");
+            }
 
-        //    return Ok();
-        //}
+            // Tạo password hash và salt
+            CreatedPasswordHash(registerDto.password,
+                out byte[] passwordHash,
+                out byte[] passwordSalt);
+
+            // Tạo đối tượng userModel
+            var userModel = registerDto.ToUserRegister(passwordHash, passwordSalt);
+            userModel.verificationToken = CreateRandomToken();
+            userModel.roleId = 2; // Mặc định role là User
+            userModel.isActive = true;
+
+            try
+            {
+                await _userService.RegisterAsync(userModel);
+                return Ok("User registered successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Trả về BadRequest với thông điệp từ exception
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
 
         ////Verify Token
         //[HttpPost("verify")]

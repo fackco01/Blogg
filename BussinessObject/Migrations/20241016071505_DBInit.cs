@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -7,7 +8,7 @@
 namespace BussinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class BlogInit : Migration
+    public partial class DBInit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,7 +49,6 @@ namespace BussinessObject.Migrations
                     fullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    password = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     gender = table.Column<bool>(type: "bit", nullable: false),
                     birthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     isActive = table.Column<bool>(type: "bit", nullable: false),
@@ -56,9 +56,9 @@ namespace BussinessObject.Migrations
                     passwordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     passwordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     verificationToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    verifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    verifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     passwordResetToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    resetTokenExpires = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    resetTokenExpires = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

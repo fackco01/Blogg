@@ -20,7 +20,8 @@ namespace BussinessObject.Model.AuthModel
         [DataType(DataType.EmailAddress)]
         public string email { get; set; }
 
-        [Required]
+        [JsonIgnore]
+        [NotMapped]
         [StringLength(20)]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")]
         [DataType(DataType.Password)]

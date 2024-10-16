@@ -21,10 +21,11 @@ namespace BloggAPI.Controllers
 
         private readonly IConfiguration _configuration;
 
-        public AuthController(IUserService userService, BloggService service)
+        public AuthController(IUserService userService, BloggService service, IConfiguration configuration)
         {
             _userService = userService;
             _service = service;
+            _configuration = configuration;
         }
 
         //Login
@@ -36,88 +37,128 @@ namespace BloggAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var loginModule = loginDto.ToUserLogin();
-            var result = await _userService.Authenticate(loginModule);
-            if (result == null)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, result.username),
-                new Claim(ClaimTypes.Role, "User")
-            };
-            string token = _service.CreateToken(claims, _configuration);
-
-            SetCookie("access_token", token, true);
-            SetCookie("uid", _service.EncryptString(result.userId.ToString(), _configuration), false);
-
-            return Ok($"Wellcome back, {result.username}!");
-        }
-
-        //Register
-        [AllowAnonymous]
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto registerDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            CreatedPasswordHash(registerDto.password,
-                out byte[] passwordHash,
-                out byte[] passwordSalt);
-
-            var userModel = registerDto.ToUserRegister(passwordHash, passwordSalt);
-            userModel.verificationToken = CreateRandomToken();
-            userModel.roleId = 2;
-            userModel.isActive = true;
             try
             {
-                _userService.Register(userModel);
-                return Ok("User registered successfully.");
+                //var isValid = await _userService.CheckUserAsync(loginDto.username, loginDto.password);
+                //if (!isValid)
+                //{
+                //    return BadRequest("USER NOT FOUND OR INVALID CREDENTIALS");
+                //}
+
+                var user = await _userService.GetUserByUsernameAsync(loginDto.username);
+                if (user == null || !user.isActive)
+                {
+                    return BadRequest("USER NOT FOUND OR INACTIVE");
+                }
+
+                // Verify password
+                if (!VerifyPasswordHash(loginDto.password, user.passwordHash, user.passwordSalt))
+                {
+                    return BadRequest("Incorrect Password!!!!!!");
+                }
+
+                // Check if account is verified
+                if (user.verifiedAt == null)
+                {
+                    return BadRequest("PLS, VERIFY YOUR ACCOUNT !!!!");
+                }
+
+                if (user.userId == null)
+                {
+                    return StatusCode(500, "User ID cannot be null.");
+                }
+
+                // Create token claims
+                //var claims = new List<Claim>
+                //{
+                //    new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
+                //    new Claim(ClaimTypes.Name, user.username),
+                //    new Claim(ClaimTypes.Role, "User") // You can change role as needed
+                //};
+
+                var claims = new List<Claim>
+                {
+                    new Claim("id", user.userId.ToString()), // Tùy chỉnh tên claim
+                    new Claim("name", user.username), // Tùy chỉnh tên claim
+                    new Claim("role", "User") // Tùy chỉnh tên claim
+                };
+
+                // Generate JWT token
+                string token = _service.CreateToken(claims, _configuration);
+
+                // Set cookies for token and userId
+                SetCookie("access_token", token, true);
+                SetCookie("uid", _service.EncryptString(user.userId.ToString(), _configuration), false);
+
+                return Ok(new { message = $"Welcome back, {user.username}!", token });
             }
             catch (Exception ex)
             {
-                // Trả về BadRequest với thông điệp từ exception
-                return BadRequest(ex.Message);
+                return StatusCode(500, "Internal server error: " + ex.Message);
             }
-
-
-            return Ok();
         }
 
-        //Verify Token
-        [HttpPost("verify")]
-        public async Task<IActionResult> Verify(string token)
-        {
-            var user = await _userService.VerifyToken(token);
-            if (user == null)
-            {
-                return BadRequest();
-            }
-            return Ok();
-        }
+        ////Register
+        //[AllowAnonymous]
+        //[HttpPost("register")]
+        //public async Task<IActionResult> Register(RegisterDto registerDto)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-        //Logout
-        [HttpPost("logout")]
-        public IActionResult Logout()
-        {
-            foreach (var cookie in Request.Cookies.Keys)
-            {
-                System.Diagnostics.Debug.Write("Cookie: " + cookie);
-                Response.Cookies.Delete(cookie, new CookieOptions()
-                {
-                    IsEssential = true,
-                    SameSite = SameSiteMode.None,
-                    Secure = true
-                });
-            }
+        //    CreatedPasswordHash(registerDto.password,
+        //        out byte[] passwordHash,
+        //        out byte[] passwordSalt);
 
-            return Ok();
-        }
+        //    var userModel = registerDto.ToUserRegister(passwordHash, passwordSalt);
+        //    userModel.verificationToken = CreateRandomToken();
+        //    userModel.roleId = 2;
+        //    userModel.isActive = true;
+        //    try
+        //    {
+        //        _userService.Register(userModel);
+        //        return Ok("User registered successfully.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Trả về BadRequest với thông điệp từ exception
+        //        return BadRequest(ex.Message);
+        //    }
+
+        //    return Ok();
+        //}
+
+        ////Verify Token
+        //[HttpPost("verify")]
+        //public async Task<IActionResult> Verify(string token)
+        //{
+        //    var user = await _userService.VerifyToken(token);
+        //    if (user == null)
+        //    {
+        //        return BadRequest();
+        //    }
+        //    return Ok();
+        //}
+
+        ////Logout
+        //[HttpPost("logout")]
+        //public IActionResult Logout()
+        //{
+        //    foreach (var cookie in Request.Cookies.Keys)
+        //    {
+        //        System.Diagnostics.Debug.Write("Cookie: " + cookie);
+        //        Response.Cookies.Delete(cookie, new CookieOptions()
+        //        {
+        //            IsEssential = true,
+        //            SameSite = SameSiteMode.None,
+        //            Secure = true
+        //        });
+        //    }
+
+        //    return Ok();
+        //}
 
         //Set Cookie
         private void SetCookie(string name, string value, bool httpOnly)

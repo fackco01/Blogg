@@ -1,12 +1,7 @@
-﻿
-using BussinessObject.ContextData;
-using DataAccess.IRepository;
-using DataAccess.IService;
-using DataAccess.Repository;
+﻿using BussinessObject.ContextData;
 using DataAccess.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Reflection;
 using System.Text;
 
 namespace BloggAPI
@@ -26,6 +21,9 @@ namespace BloggAPI
             builder.Services.AddDbContext<BlogContext>();
             builder.Services.AddHttpContextAccessor();
 
+            // Load appsettings.json
+            builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
             //Add Service and Repo
             //builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<BloggService>();
@@ -33,8 +31,6 @@ namespace BloggAPI
 
             // Đăng ký tất cả các services và repositories
             builder.Services.AddApplicationServicesAutomatically();
-
-
 
             // Configure upload path
             var uploadPath = builder.Configuration.GetValue<string>("UploadPath");
@@ -87,9 +83,7 @@ namespace BloggAPI
                                 context.Token = accessTokenValue;
                             }
                             return Task.CompletedTask;
-
                         }
-
                     };
                 });
 
@@ -122,7 +116,6 @@ namespace BloggAPI
             app.UseSwagger();
             app.UseSwaggerUI();
 
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
@@ -130,7 +123,6 @@ namespace BloggAPI
 
             app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 

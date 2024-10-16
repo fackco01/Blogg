@@ -1,94 +1,244 @@
 ﻿using BussinessObject.ContextData;
 using BussinessObject.Model.AuthModel;
-using DataAccess.IRepository;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace DataAccess.Repository
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository
     {
-        private readonly BlogContext _blogContext;
-        public UserRepository(BlogContext blogContext) 
+        //Check User Data
+
+        #region CheckUser
+
+        public static async Task<bool> CheckUser(string username, string password)
         {
-            _blogContext = blogContext;
-        }
-        public async Task<UserModel> Authenticate(LoginModel login)
-        {
-            var user = await _blogContext.users.FirstOrDefaultAsync(u => u.username == login.username && u.password == login.password);
-            if (user == null)
+            try
             {
-                return null;
+                using (var context = new BlogContext())
+                {
+                    var user = await context.users
+                        .FirstOrDefaultAsync(a => a.username == username && a.password == password);
+                    return user != null;
+                }
             }
-
-            return user;
-        }
-
-        public async Task<UserModel> VerifyToken(string token)
-        {
-            var userToken = await _blogContext.users.FirstOrDefaultAsync(u => u.verificationToken == token);
-            if (userToken == null) 
+            catch (Exception e)
             {
-                return null;
-            }
-
-            userToken.verifiedAt = DateTime.UtcNow;
-            await _blogContext.SaveChangesAsync();
-
-            return userToken;
-        }
-
-        public bool CheckUser(string username, string password)
-        {
-            return _blogContext.users.Any(u => u.username == username && u.password == password);
-        }
-
-        public List<UserModel> GetListUsers()
-        {
-            return _blogContext.users.ToList();
-        }
-
-        public UserModel GetUserById(Guid id)
-        {
-            return _blogContext.users.FirstOrDefault(u => u.userId == id);
-        }
-
-        public UserModel GetUserByName(string username)
-        {
-            return _blogContext.users.FirstOrDefault(u => u.username == username);
-        }
-
-        public List<UserModel> GetUsersEmail(string email)
-        {
-            return _blogContext.users.Where(u => u.email == email).ToList();
-        }
-
-        public void UserDelete(Guid id)
-        {
-            var user = _blogContext.users.Find(id);
-            if (user != null)
-            {
-                _blogContext.users.Remove(user);
-                _blogContext.SaveChanges();
+                throw new Exception(e.Message);
             }
         }
 
-        public void UserRegister(UserModel user)
+        #endregion CheckUser
+
+        //Get Data User
+        // Get Data User Profile (Async)
+
+        #region GetProfileAsync
+
+        public static async Task<UserModel> GetProfileAsync(ClaimsPrincipal claims)
         {
-            _blogContext.users.Add(user);
-            _blogContext.SaveChanges();
+            try
+            {
+                using (var context = new BlogContext())
+                {
+                    // Trích xuất userId từ JWT token
+                    var userIdClaim = claims.FindFirst(ClaimTypes.NameIdentifier);
+                    if (userIdClaim == null)
+                    {
+                        throw new Exception("User ID not found in token.");
+                    }
+
+                    var userId = Guid.Parse(userIdClaim.Value);
+
+                    var user = await context.users
+                        .FirstOrDefaultAsync(u => u.userId == userId);
+                    return user;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
-        public void UserUpdate(UserModel user)
+        #endregion GetProfileAsync
+
+        //Get List Users Data
+
+        #region GetListUsers
+
+        public static async Task<List<UserModel>> GetListUsers()
         {
-            _blogContext.users.Add(user);
-            _blogContext.Entry(user).State = EntityState.Modified;
-            _blogContext.SaveChanges();
+            try
+            {
+                var listUsers = new List<UserModel>();
+                using (var context = new BlogContext())
+                {
+                    listUsers = await context.users.ToListAsync();
+                    return listUsers;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
+
+        #endregion GetListUsers
+
+        //Get User Data by Id
+
+        #region GetUserId
+
+        public static async Task<UserModel> GetUserId(Guid Id)
+        {
+            try
+            {
+                var user = new UserModel();
+                using (var context = new BlogContext())
+                {
+                    user = await context.users
+                        .FirstOrDefaultAsync(u => u.userId == Id);
+                }
+                return user;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        #endregion GetUserId
+
+        //Register User
+
+        #region Register
+
+        public static async Task Register(UserModel user)
+        {
+            try
+            {
+                using (var context = new BlogContext())
+                {
+                    context.users.Add(user);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        #endregion Register
+
+        //Update user
+
+        #region UpdateUser
+
+        public static async Task UpdateUser(Guid Id)
+        {
+            try
+            {
+                using (var context = new BlogContext())
+                {
+                    var user = await GetUserId(Id);
+                    if (user == null)
+                    {
+                        throw new Exception("User not found");
+                    }
+                    context.Entry(user).State
+                        = EntityState.Modified;
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        #endregion UpdateUser
+
+        //Inactive User
+
+        #region InactiveUser
+
+        public static async Task InactiveUser(Guid Id)
+        {
+            try
+            {
+                using (var context = new BlogContext())
+                {
+                    var user = await GetUserId(Id);
+                    if (user == null)
+                    {
+                        throw new Exception("User not found");
+                    }
+
+                    user.isActive = false; // Cập nhật trạng thái người dùng
+                    context.Entry(user).State = EntityState.Modified;
+                    await context.SaveChangesAsync(); // Cần lưu thay đổi
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        #endregion InactiveUser
+
+        //Get user by email
+
+        #region GetUserByEmail
+
+        public static async Task<UserModel> GetUserByEmail(string email)
+        {
+            try
+            {
+                using (var context = new BlogContext())
+                {
+                    var user = await context.users.FirstOrDefaultAsync(u => u.email == email);
+                    if (user == null)
+                    {
+                        throw new Exception("Email Doesn't Exist!!!!!!");
+                    }
+                    return user;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        #endregion GetUserByEmail
+
+        //Get user by username
+
+        #region GetUserByUsername
+
+        public static async Task<UserModel> GetUserByUsername(string username)
+        {
+            try
+            {
+                using (var context = new BlogContext())
+                {
+                    var user = await context.users.FirstOrDefaultAsync(u => u.username == username);
+                    if (user == null)
+                    {
+                        throw new Exception("User Doesn't Exist!!!!!!");
+                    }
+                    return user;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        #endregion GetUserByUsername
     }
 }

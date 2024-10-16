@@ -1,12 +1,7 @@
 ﻿using BussinessObject.Model.AuthModel;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace BussinessObject.Model.BlogModel
 {
@@ -16,6 +11,7 @@ namespace BussinessObject.Model.BlogModel
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid postId { get; set; }
+
         [Required] public Guid userId { get; set; }
         [Required] public string title { get; set; }
         public string content { get; set; }
@@ -28,8 +24,10 @@ namespace BussinessObject.Model.BlogModel
 
         [JsonIgnore]
         public virtual UserModel? user { get; set; }
+
         [JsonIgnore]
         public ICollection<Post_Tag>? post_Tags { get; set; }
+
         [JsonIgnore]
         public ICollection<CommentModel> comments { get; set; }
     }

@@ -2,18 +2,13 @@
 using BussinessObject.Model.BlogModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BussinessObject.ContextData
 {
     public class BlogContext : DbContext
     {
-        public BlogContext() { }
+        public BlogContext()
+        { }
 
         public virtual DbSet<UserModel> users { get; set; }
         public virtual DbSet<RoleModel> roles { get; set; }

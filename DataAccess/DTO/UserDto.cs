@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace DataAccess.DTO
@@ -17,7 +11,7 @@ namespace DataAccess.DTO
         public string phone { get; set; } = string.Empty;
         public string email { get; set; } = string.Empty;
         public string password { get; set; }
-        public bool gender { get; set; } 
+        public bool gender { get; set; }
         public DateTime birthDate { get; set; }
         public bool isActive { get; set; }
         public int roleId { get; set; }
@@ -45,7 +39,7 @@ namespace DataAccess.DTO
         public bool isActive { get; set; }
     }
 
-    public record UserLoginDto 
+    public record UserLoginDto
     {
         public string username { get; set; }
         public string password { get; set; }

@@ -1,26 +1,23 @@
-﻿using DataAccess.IRepository;
-using DataAccess.IService;
+﻿using DataAccess.IService;
 using DataAccess.Repository;
 using DataAccess.Service;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Linq;
 using System.Reflection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-    {
-        // Đăng ký các services
-        services.AddScoped<IUserService, UserService>();
-        // Thêm các service khác ở đây...
+    //public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    //{
+    //    // Đăng ký các services
+    //    services.AddScoped<IUserService, UserService>();
+    //    // Thêm các service khác ở đây...
 
-        // Đăng ký các repositories
-        services.AddScoped<IUserRepository, UserRepository>();
-        // Thêm các repository khác ở đây...
+    //    // Đăng ký các repositories
+    //    services.AddScoped<UserRepository>();
+    //    // Thêm các repository khác ở đây...
 
-        return services;
-    }
+    //    return services;
+    //}
 
     // Phương pháp tự động đăng ký tất cả các interfaces và implementations
     public static IServiceCollection AddApplicationServicesAutomatically(this IServiceCollection services)

@@ -1,64 +1,127 @@
-﻿using BussinessObject.Model.AuthModel;
-using DataAccess.IRepository;
+﻿using BussinessObject.ContextData;
+using BussinessObject.Model.AuthModel;
 using DataAccess.IService;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DataAccess.Repository;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace DataAccess.Service
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly BlogContext _context;
+
+        public UserService(BlogContext context)
         {
-            _userRepository = userRepository;
-        }
-        public async Task<UserModel> Authenticate(LoginModel login)
-        {
-            return await _userRepository.Authenticate(login);
+            _context = context;
         }
 
-        public void Delete(Guid id)
+        public async Task<bool> CheckUserAsync(string username, string password)
         {
-            _userRepository.UserDelete(id);
-        }
-
-        public List<UserModel> GetAllUsers()
-        {
-            return _userRepository.GetListUsers();
-        }
-
-        public UserModel GetUserById(Guid id)
-        {
-            return _userRepository.GetUserById(id);
-        }
-
-        public void Register(UserModel user)
-        {
-            var existingUser = _userRepository.GetUsersEmail(user.email);
-            if (existingUser != null) 
+            try
             {
-                throw new Exception("User Already Exist");
+                return await UserRepository.CheckUser(username, password);
             }
-            _userRepository.UserRegister(user);
-        }
-
-        public void Update(UserModel user)
-        {
-            _userRepository.UserUpdate(user);
-        }
-
-        public async Task<UserModel> VerifyToken(string token)
-        {
-            var checkToken = await _userRepository.VerifyToken(token);
-            if (checkToken == null) 
+            catch (Exception e)
             {
-                return null;
+                throw new Exception(e.Message);
             }
-            return checkToken;
+        }
+
+        public async Task<UserModel> GetProfileAsync(ClaimsPrincipal claims)
+        {
+            try
+            {
+                return await UserRepository.GetProfileAsync(claims);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        public async Task<List<UserModel>> GetListUsersAsync()
+        {
+            try
+            {
+                return await UserRepository.GetListUsers();
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        public async Task<UserModel> GetUserByIdAsync(Guid Id)
+        {
+            try
+            {
+                return await UserRepository.GetUserId(Id);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        public async Task RegisterAsync(UserModel user)
+        {
+            try
+            {
+                await UserRepository.Register(user);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        public async Task UpdateUser(Guid Id)
+        {
+            try
+            {
+                await UserRepository.UpdateUser(Id);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        public async Task InactivateUser(Guid Id)
+        {
+            try
+            {
+                await UserRepository.InactiveUser(Id);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        public async Task<UserModel> GetUserByEmailAsync(string email)
+        {
+            try
+            {
+                return await UserRepository.GetUserByEmail(email);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        public async Task<UserModel> GetUserByUsernameAsync(string username)
+        {
+            try
+            {
+                return await UserRepository.GetUserByUsername(username);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
     }
 }

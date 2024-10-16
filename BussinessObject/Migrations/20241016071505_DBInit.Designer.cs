@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BussinessObject.Migrations
 {
     [DbContext(typeof(BlogContext))]
-    [Migration("20241014065517_BlogInit")]
-    partial class BlogInit
+    [Migration("20241016071505_DBInit")]
+    partial class DBInit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -77,11 +77,6 @@ namespace BussinessObject.Migrations
                     b.Property<bool>("isActive")
                         .HasColumnType("bit");
 
-                    b.Property<string>("password")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<byte[]>("passwordHash")
                         .HasColumnType("varbinary(max)");
 
@@ -95,7 +90,7 @@ namespace BussinessObject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("resetTokenExpires")
+                    b.Property<DateTime>("resetTokenExpires")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("roleId")
@@ -108,7 +103,7 @@ namespace BussinessObject.Migrations
                     b.Property<string>("verificationToken")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("verifiedAt")
+                    b.Property<DateTime>("verifiedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("userId");

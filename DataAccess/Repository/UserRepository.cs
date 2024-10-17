@@ -1,5 +1,6 @@
 ﻿using BussinessObject.ContextData;
 using BussinessObject.Model.AuthModel;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -240,5 +241,48 @@ namespace DataAccess.Repository
         }
 
         #endregion GetUserByUsername
+
+        //Verify Token
+
+        #region VerifyToken
+
+        public static async Task<string> VerifyToken(string token)
+        {
+            try
+            {
+                using (var context = new BlogContext())
+                {
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        throw new ArgumentException("Token is required");
+                    }
+
+                    var user = await context.users.FirstOrDefaultAsync(u => u.verificationToken == token);
+                    if (user == null)
+                    {
+                        return null;
+                    }
+
+                    if (user.verificationTokenExpires < DateTime.UtcNow)
+                    {
+                        return null;
+                    }
+
+                    user.verifiedAt = DateTime.Now;
+                    user.isActive = true;
+                    user.verificationToken = null;
+                    user.verificationTokenExpires = null;
+                    await context.SaveChangesAsync();
+
+                    return token;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        #endregion VerifyToken
     }
 }

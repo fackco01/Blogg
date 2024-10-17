@@ -37,6 +37,7 @@ namespace BussinessObject.Model.AuthModel
 
         public byte[]? passwordSalt { get; set; } = new byte[32];
         public string? verificationToken { get; set; }
+        public DateTime? verificationTokenExpires { get; set; }
         public DateTime verifiedAt { get; set; }
         public string? passwordResetToken { get; set; }
         public DateTime resetTokenExpires { get; set; }

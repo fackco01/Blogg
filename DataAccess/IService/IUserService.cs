@@ -31,5 +31,8 @@ namespace DataAccess.IService
 
         // Get user by username
         Task<UserModel> GetUserByUsernameAsync(string username);
+
+        //Verify token
+        Task<string> VerifyToken(string token);
     }
 }

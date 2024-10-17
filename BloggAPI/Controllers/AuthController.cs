@@ -30,7 +30,7 @@ namespace BloggAPI.Controllers
 
         //Login
         [AllowAnonymous]
-        [HttpPost("login")]
+        [HttpPost]
         public async Task<IActionResult> Login(UserLoginDto loginDto)
         {
             if (!ModelState.IsValid)
@@ -100,7 +100,7 @@ namespace BloggAPI.Controllers
 
         //Register
         [AllowAnonymous]
-        [HttpPost("register")]
+        [HttpPost]
         public async Task<IActionResult> Register(RegisterDto registerDto)
         {
             if (!ModelState.IsValid)
@@ -146,7 +146,7 @@ namespace BloggAPI.Controllers
         }
 
         //Verify Token
-        [HttpPost("verify")]
+        [HttpPost]
         public async Task<IActionResult> Verify(string token)
         {
             if (string.IsNullOrEmpty(token))
@@ -163,7 +163,7 @@ namespace BloggAPI.Controllers
         }
 
         //Logout
-        [HttpPost("logout")]
+        [HttpPost]
         public IActionResult Logout()
         {
             foreach (var cookie in Request.Cookies.Keys)

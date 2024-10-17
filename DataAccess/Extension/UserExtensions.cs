@@ -48,5 +48,26 @@ namespace DataAccess.Extension
                 isActive = registerDto.isActive,
             };
         }
+
+        public static ListUserDto ToUserListDto(this UserModel user)
+        {
+            return new ListUserDto
+            {
+                username = user.username,
+                email = user.email,
+                phone = user.phone,
+                fullName = user.fullName,
+                birthDate = user.birthDate,
+                gender = user.gender,
+                isActive = user.isActive,
+                verifiedAt = user.verifiedAt,
+                roleId = user.roleId
+            };
+        }
+
+        public static List<ListUserDto> ToUserListDto(this List<UserModel> users)
+        {
+            return users.Select(user => user.ToUserListDto()).ToList();
+        }
     }
 }

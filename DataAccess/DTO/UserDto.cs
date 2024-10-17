@@ -68,4 +68,17 @@ namespace DataAccess.DTO
         [Required, Compare("password")]
         public string confirmPassword { get; set; } = string.Empty;
     }
+
+    public record ListUserDto
+    {
+        public string username { get; set; } = string.Empty;
+        public string fullName { get; set; } = string.Empty;
+        public string phone { get; set; } = string.Empty;
+        public string email { get; set; } = string.Empty;
+        public bool gender { get; set; }
+        public DateTime birthDate { get; set; }
+        public bool isActive { get; set; }
+        public int roleId { get; set; }
+        public DateTime verifiedAt { get; set; } = DateTime.UtcNow;
+    }
 }

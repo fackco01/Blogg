@@ -123,5 +123,17 @@ namespace DataAccess.Service
                 return null;
             }
         }
+
+        public async Task<string> VerifyToken(string token)
+        {
+            try
+            {
+                return await UserRepository.VerifyToken(token);
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
     }
 }

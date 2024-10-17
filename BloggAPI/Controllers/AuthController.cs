@@ -129,8 +129,9 @@ namespace BloggAPI.Controllers
             // Tạo đối tượng userModel
             var userModel = registerDto.ToUserRegister(passwordHash, passwordSalt);
             userModel.verificationToken = CreateRandomToken();
+            userModel.verificationTokenExpires = DateTime.UtcNow.AddMinutes(10);
             userModel.roleId = 2; // Mặc định role là User
-            userModel.isActive = true;
+            userModel.isActive = false;
 
             try
             {
@@ -144,35 +145,40 @@ namespace BloggAPI.Controllers
             }
         }
 
-        ////Verify Token
-        //[HttpPost("verify")]
-        //public async Task<IActionResult> Verify(string token)
-        //{
-        //    var user = await _userService.VerifyToken(token);
-        //    if (user == null)
-        //    {
-        //        return BadRequest();
-        //    }
-        //    return Ok();
-        //}
+        //Verify Token
+        [HttpPost("verify")]
+        public async Task<IActionResult> Verify(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest("Token is required.");
+            }
 
-        ////Logout
-        //[HttpPost("logout")]
-        //public IActionResult Logout()
-        //{
-        //    foreach (var cookie in Request.Cookies.Keys)
-        //    {
-        //        System.Diagnostics.Debug.Write("Cookie: " + cookie);
-        //        Response.Cookies.Delete(cookie, new CookieOptions()
-        //        {
-        //            IsEssential = true,
-        //            SameSite = SameSiteMode.None,
-        //            Secure = true
-        //        });
-        //    }
+            var user = await _userService.VerifyToken(token);
+            if (user == null)
+            {
+                return BadRequest("INCORRECT TOKEN");
+            }
+            return Ok();
+        }
 
-        //    return Ok();
-        //}
+        //Logout
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            foreach (var cookie in Request.Cookies.Keys)
+            {
+                System.Diagnostics.Debug.Write("Cookie: " + cookie);
+                Response.Cookies.Delete(cookie, new CookieOptions()
+                {
+                    IsEssential = true,
+                    SameSite = SameSiteMode.None,
+                    Secure = true
+                });
+            }
+
+            return Ok();
+        }
 
         //Set Cookie
         private void SetCookie(string name, string value, bool httpOnly)

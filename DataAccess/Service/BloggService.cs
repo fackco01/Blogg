@@ -24,9 +24,9 @@ namespace DataAccess.Service
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
             var token = new JwtSecurityToken(
-                //issuer: config["JWT:Issuer"],
-                //audience: config["JWT:Audience"],
-                expires: DateTime.UtcNow.AddHours(3),
+                issuer: config["JWT:Issuer"],
+                audience: config["JWT:Audience"],
+                expires: DateTime.UtcNow.AddMinutes(1),
                 claims: authClaims,
                 signingCredentials: cred
             );

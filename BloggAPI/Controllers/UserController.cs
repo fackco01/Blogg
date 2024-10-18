@@ -4,6 +4,7 @@ using DataAccess.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BloggAPI.Controllers
 {
@@ -58,5 +59,50 @@ namespace BloggAPI.Controllers
         }
 
         #endregion GetListUsers
+
+        //Get Account Profile
+
+        #region GetUserProfile
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetUserProfile()
+        {
+            try
+            {
+                // Lấy ID của user từ token đã được xác thực
+                var userId = User.FindFirst("id")?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User ID not found in token.");
+                }
+
+                // Chuyển đổi userId từ string sang Guid
+                if (!Guid.TryParse(userId, out Guid userGuid))
+                {
+                    return BadRequest("Invalid user ID format.");
+                }
+
+                // Sử dụng userId để lấy profile của user
+                var user = await _userService.GetUserByIdAsync(userGuid);
+
+                if (user == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                var userDto = user.ToUserDto(); // Chuyển đổi thành DTO nếu cần
+
+                return Ok(userDto);
+            }
+            catch (Exception e)
+            {
+                // Log the exception here
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+        #endregion GetUserProfile
     }
 }
